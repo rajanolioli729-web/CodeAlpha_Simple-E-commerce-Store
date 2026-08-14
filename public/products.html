@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CodeAlpha Store | Products</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="index.html" class="logo">CodeAlpha<span>Store</span></a>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="products.html" class="active">Products</a></li>
+        <li><a href="cart.html">Cart <span id="cartCount" class="cart-badge">0</span></a></li>
+        <li id="authLinks">
+          <a href="login.html" class="btn btn-outline">Login</a>
+          <a href="register.html" class="btn btn-primary">Register</a>
+        </li>
+        <li id="userMenu" style="display: none;">
+          <span id="userName" class="user-name"></span>
+          <a href="#" id="logoutBtn" class="btn btn-outline">Logout</a>
+        </li>
+      </ul>
+      <button class="hamburger" id="hamburger" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Products Page Header -->
+  <section class="page-header">
+    <div class="container">
+      <h1>Our Products</h1>
+      <p>Browse our collection of quality products</p>
+    </div>
+  </section>
+
+  <!-- Search and Filter Section -->
+  <section class="products-section">
+    <div class="container">
+      <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="Search products..." aria-label="Search products">
+        <button id="searchBtn" class="btn btn-primary">Search</button>
+      </div>
+
+      <div class="products-grid" id="productsGrid">
+        <!-- Products will be loaded here by JavaScript -->
+      </div>
+
+      <div id="noResults" class="no-results" style="display: none;">
+        <p>No products found. Try a different search.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>CodeAlphaStore</h3>
+          <p>Your one-stop shop for quality products at great prices.</p>
+        </div>
+        <div class="footer-section">
+          <h3>Quick Links</h3>
+          <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="products.html">Products</a></li>
+            <li><a href="cart.html">Cart</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h3>Account</h3>
+          <ul>
+            <li><a href="login.html">Login</a></li>
+            <li><a href="register.html">Register</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 CodeAlphaStore. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/script.js"></script>
+</body>
+</html>
