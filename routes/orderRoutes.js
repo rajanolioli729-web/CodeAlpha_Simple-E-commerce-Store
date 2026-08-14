@@ -8,4 +8,7 @@ router.post('/', orderController.placeOrder);
 // GET /api/orders - Get all orders for the logged-in user
 router.get('/', orderController.getUserOrders);
 
+// GET /api/orders/:id - Get a single order by ID
+router.get('/:id', orderController.getOrderById);
+
 module.exports = router;

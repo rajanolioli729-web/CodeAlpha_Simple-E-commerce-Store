@@ -1,19 +1,27 @@
+const pool = require('../database/db');
 const orderModel = require('../models/orderModel');
 const productModel = require('../models/productModel');
 
 // POST /api/orders - Place a new order (requires login)
 async function placeOrder(req, res) {
+  let connection;
   try {
     // Check if the user is logged in
     if (!req.session.userId) {
       return res.status(401).json({ success: false, message: 'Please log in to place an order' });
     }
 
-    const { items } = req.body;
+    const { items, shipping } = req.body;
 
     // Validate that items array exists and is not empty
     if (!items || !Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ success: false, message: 'Your cart is empty' });
+    }
+
+    // Validate shipping information
+    if (!shipping || !shipping.name || !shipping.email || !shipping.phone ||
+        !shipping.address || !shipping.city || !shipping.postalCode) {
+      return res.status(400).json({ success: false, message: 'Please provide complete shipping information' });
     }
 
     // Extract product IDs and validate quantities
@@ -44,50 +52,74 @@ async function placeOrder(req, res) {
     }
 
     // Calculate the total price on the server (never trust frontend prices)
-    let totalPrice = 0;
+    let totalAmount = 0;
 
     for (const product of products) {
       const quantity = quantities[product.id];
 
       // Check if enough stock is available
-      if (quantity > product.quantity) {
+      if (quantity > product.stock) {
         return res.status(400).json({
           success: false,
-          message: `Insufficient stock for "${product.name}". Only ${product.quantity} left.`
+          message: `Insufficient stock for "${product.name}". Only ${product.stock} left.`
         });
       }
 
-      totalPrice += product.price * quantity;
+      totalAmount += parseFloat(product.price) * quantity;
     }
 
     // Round the total to 2 decimal places
-    totalPrice = Math.round(totalPrice * 100) / 100;
+    totalAmount = Math.round(totalAmount * 100) / 100;
 
-    // Create the order in the database
-    const orderId = await orderModel.createOrder(req.session.userId, totalPrice);
+    // Begin transaction
+    connection = await pool.getConnection();
+    await connection.beginTransaction();
 
-    // Add each item to the order and update product stock
+    // Create the order within the transaction
+    const orderId = await orderModel.createOrder(req.session.userId, {
+      totalAmount,
+      status: 'Pending',
+      shippingName: shipping.name,
+      shippingEmail: shipping.email,
+      shippingPhone: shipping.phone,
+      shippingAddress: shipping.address,
+      shippingCity: shipping.city,
+      postalCode: shipping.postalCode
+    }, connection);
+
+    // Add each item to the order and update product stock within the transaction
     for (const product of products) {
       const quantity = quantities[product.id];
-      await orderModel.addOrderItem(orderId, product.id, quantity, product.price);
+      await orderModel.addOrderItem(orderId, product.id, quantity, product.price, connection);
 
-      // Reduce the product quantity in stock
-      const newQuantity = product.quantity - quantity;
-      await productModel.updateProductQuantity(product.id, newQuantity);
+      // Reduce the product stock
+      const newStock = product.stock - quantity;
+      await productModel.updateProductQuantity(product.id, newStock, connection);
     }
+
+    // Commit the transaction
+    await connection.commit();
 
     res.status(201).json({
       success: true,
-      message: 'Order placed successfully!',
+      message: 'Your order has been placed successfully.',
       order: {
         id: orderId,
-        totalPrice,
+        totalAmount,
         orderDate: new Date().toISOString()
       }
     });
   } catch (error) {
+    // Rollback the transaction on error
+    if (connection) {
+      await connection.rollback();
+    }
     console.error('Order placement error:', error);
     res.status(500).json({ success: false, message: 'Failed to place order. Please try again.' });
+  } finally {
+    if (connection) {
+      connection.release();
+    }
   }
 }
 
@@ -115,7 +147,38 @@ async function getUserOrders(req, res) {
   }
 }
 
+// GET /api/orders/:id - Get a single order by ID (ownership verified)
+async function getOrderById(req, res) {
+  try {
+    if (!req.session.userId) {
+      return res.status(401).json({ success: false, message: 'Please log in to view this order' });
+    }
+
+    const orderId = parseInt(req.params.id, 10);
+    if (isNaN(orderId) || orderId <= 0) {
+      return res.status(400).json({ success: false, message: 'Invalid order ID' });
+    }
+
+    const order = await orderModel.getOrderById(orderId);
+    if (!order) {
+      return res.status(404).json({ success: false, message: 'Order not found' });
+    }
+
+    // Verify ownership - users can only access their own orders
+    if (order.user_id !== req.session.userId && req.session.role !== 'admin') {
+      return res.status(403).json({ success: false, message: 'Access denied' });
+    }
+
+    const items = await orderModel.getOrderItems(orderId);
+    res.json({ success: true, order: { ...order, items } });
+  } catch (error) {
+    console.error('Fetch order error:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch order' });
+  }
+}
+
 module.exports = {
   placeOrder,
-  getUserOrders
+  getUserOrders,
+  getOrderById
 };

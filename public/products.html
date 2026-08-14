@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CodeAlpha Store | Products</title>
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/responsive.css">
 </head>
 <body>
-  <!-- Navigation Bar -->
   <nav class="navbar">
     <div class="nav-container">
       <a href="index.html" class="logo">CodeAlpha<span>Store</span></a>
@@ -15,6 +15,7 @@
         <li><a href="index.html">Home</a></li>
         <li><a href="products.html" class="active">Products</a></li>
         <li><a href="cart.html">Cart <span id="cartCount" class="cart-badge">0</span></a></li>
+        <li><a href="orders.html">My Orders</a></li>
         <li id="authLinks">
           <a href="login.html" class="btn btn-outline">Login</a>
           <a href="register.html" class="btn btn-primary">Register</a>
@@ -25,14 +26,11 @@
         </li>
       </ul>
       <button class="hamburger" id="hamburger" aria-label="Menu">
-        <span></span>
-        <span></span>
-        <span></span>
+        <span></span><span></span><span></span>
       </button>
     </div>
   </nav>
 
-  <!-- Products Page Header -->
   <section class="page-header">
     <div class="container">
       <h1>Our Products</h1>
@@ -40,7 +38,6 @@
     </div>
   </section>
 
-  <!-- Search and Filter Section -->
   <section class="products-section">
     <div class="container">
       <div class="search-bar">
@@ -48,8 +45,12 @@
         <button id="searchBtn" class="btn btn-primary">Search</button>
       </div>
 
-      <div class="products-grid" id="productsGrid">
-        <!-- Products will be loaded here by JavaScript -->
+      <div class="category-filter" id="categoryFilter">
+        <button class="category-btn active" data-category="">All</button>
+      </div>
+
+      <div id="productsGrid">
+        <div class="loading">Loading...</div>
       </div>
 
       <div id="noResults" class="no-results" style="display: none;">
@@ -58,7 +59,6 @@
     </div>
   </section>
 
-  <!-- Footer -->
   <footer class="footer">
     <div class="container">
       <div class="footer-content">
@@ -72,6 +72,7 @@
             <li><a href="index.html">Home</a></li>
             <li><a href="products.html">Products</a></li>
             <li><a href="cart.html">Cart</a></li>
+            <li><a href="orders.html">My Orders</a></li>
           </ul>
         </div>
         <div class="footer-section">
@@ -88,6 +89,8 @@
     </div>
   </footer>
 
+  <div id="toast" class="toast"></div>
   <script src="js/script.js"></script>
+  <script src="js/products.js"></script>
 </body>
 </html>

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard | CodeAlpha Store</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/admin.css">
+  <link rel="stylesheet" href="../css/responsive.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="../index.html" class="logo">CodeAlpha<span>Store</span></a>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="index.html" class="active">Dashboard</a></li>
+        <li><a href="products.html">Products</a></li>
+        <li><a href="orders.html">Orders</a></li>
+        <li id="authLinks">
+          <a href="../login.html" class="btn btn-outline">Login</a>
+          <a href="../register.html" class="btn btn-primary">Register</a>
+        </li>
+        <li id="userMenu" style="display: none;">
+          <span id="userName" class="user-name"></span>
+          <a href="#" id="logoutBtn" class="btn btn-outline">Logout</a>
+        </li>
+      </ul>
+      <button class="hamburger" id="hamburger" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <section class="page-header">
+    <div class="container">
+      <h1>Admin Dashboard</h1>
+      <p>Manage your store</p>
+    </div>
+  </section>
+
+  <section class="admin-section">
+    <div class="container">
+      <div class="admin-cards" id="adminDashboard">
+        <div class="loading">Loading...</div>
+      </div>
+    </div>
+  </section>
+
+  <div id="toast" class="toast"></div>
+  <script src="../js/script.js"></script>
+  <script src="../js/admin.js"></script>
+</body>
+</html>

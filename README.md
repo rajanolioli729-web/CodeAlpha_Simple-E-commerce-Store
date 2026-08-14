@@ -1,19 +1,29 @@
-# CodeAlpha Ecommerce Store
+# CodeAlpha Simple E-commerce Store
 
-A complete full-stack e-commerce web application built with Node.js, Express, MySQL, HTML, CSS, and Vanilla JavaScript. This project was created as part of the CodeAlpha Full Stack Development internship.
+A complete full-stack e-commerce web application built with Node.js, Express, MySQL, HTML, CSS, and Vanilla JavaScript. This project was developed as part of the **CodeAlpha Full Stack Development Internship**.
+
+## Project Overview
+
+This is a simple but complete e-commerce store that allows users to browse products, add items to a shopping cart, place orders with Cash on Delivery, and track their order history. It includes a full admin panel for managing products and orders.
 
 ## Features
 
-- **Home Page** - Hero section, featured products, and call-to-action
-- **Products Page** - Browse all products with search/filter functionality
-- **Product Details** - View detailed information about each product
-- **Shopping Cart** - Add, remove, and update items with localStorage persistence
-- **User Registration** - Create an account with password hashing (bcrypt)
-- **User Login/Logout** - Session-based authentication
-- **Order System** - Place orders with server-side price calculation
-- **Responsive Design** - Mobile-friendly layout
+### User Features
+- **Home Page** - Hero section, featured products, categories, and call-to-action
+- **Products Page** - Browse all products with search and category filtering
+- **Product Details** - View detailed information with quantity selector
+- **Shopping Cart** - Add, remove, update items with localStorage persistence
+- **Checkout** - Collect shipping information with Cash on Delivery payment
+- **Order History** - View and track your orders
+- **User Registration/Login** - Session-based authentication with bcrypt password hashing
+- **User Profile** - View account information and recent orders
 
-## Technologies Used
+### Admin Features
+- **Dashboard** - Overview of products, orders, and revenue
+- **Product Management** - Add, edit, delete products, update stock and price
+- **Order Management** - View all orders, customer info, and update order status
+
+## Technologies
 
 ### Frontend
 - HTML5
@@ -29,51 +39,79 @@ A complete full-stack e-commerce web application built with Node.js, Express, My
 - mysql2
 
 ### Authentication
-- Express sessions
-- bcrypt for password hashing
+- express-session
+- bcrypt
 
-### Development
-- Nodemon
+### Other
+- dotenv
+- nodemon (development)
 
-## Folder Structure
+## Project Structure
 
 ```
-CodeAlpha_EcommerceStore/
+CodeAlpha_Simple-E-commerce-Store/
 │
 ├── public/
 │   ├── index.html
 │   ├── products.html
 │   ├── product.html
 │   ├── cart.html
+│   ├── checkout.html
+│   ├── order-success.html
+│   ├── orders.html
 │   ├── login.html
 │   ├── register.html
+│   │
+│   ├── admin/
+│   │   ├── index.html
+│   │   ├── products.html
+│   │   └── orders.html
+│   │
 │   ├── css/
-│   │   └── style.css
+│   │   ├── style.css
+│   │   ├── admin.css
+│   │   └── responsive.css
+│   │
 │   └── js/
-│       └── script.js
+│       ├── script.js
+│       ├── auth.js
+│       ├── products.js
+│       ├── product.js
+│       ├── cart.js
+│       ├── checkout.js
+│       ├── orders.js
+│       └── admin.js
 │
 ├── routes/
-│   ├── productRoutes.js
 │   ├── authRoutes.js
-│   └── orderRoutes.js
+│   ├── productRoutes.js
+│   ├── orderRoutes.js
+│   └── adminRoutes.js
 │
 ├── controllers/
-│   ├── productController.js
 │   ├── authController.js
-│   └── orderController.js
+│   ├── productController.js
+│   ├── orderController.js
+│   └── adminController.js
 │
 ├── models/
-│   ├── productModel.js
 │   ├── userModel.js
+│   ├── productModel.js
 │   └── orderModel.js
+│
+├── middleware/
+│   ├── authMiddleware.js
+│   └── adminMiddleware.js
 │
 ├── database/
 │   ├── db.js
 │   └── schema.sql
 │
 ├── .env
+├── .env.example
 ├── .gitignore
 ├── package.json
+├── package-lock.json
 ├── README.md
 └── server.js
 ```
@@ -90,7 +128,7 @@ CodeAlpha_EcommerceStore/
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd CodeAlpha_EcommerceStore
+   cd CodeAlpha_Simple-E-commerce-Store
    ```
 
 2. **Install dependencies**
@@ -104,11 +142,11 @@ CodeAlpha_EcommerceStore/
    ```bash
    mysql -u root -p < database/schema.sql
    ```
-   This will create the database, tables, and insert sample products.
+   This will create the database, tables, and insert 12 sample products.
 
 4. **Configure environment variables**
 
-   Create a `.env` file in the root directory (or edit the existing one):
+   Create a `.env` file in the root directory (or copy from `.env.example`):
    ```
    PORT=3000
    DB_HOST=localhost
@@ -134,13 +172,63 @@ CodeAlpha_EcommerceStore/
 
    Navigate to: http://localhost:3000
 
-## API Endpoints
+## MySQL Setup
 
-### Products
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/products` | Get all products |
-| GET | `/api/products/:id` | Get a single product by ID |
+The `database/schema.sql` file creates:
+- `codealpha_ecommerce` database
+- `users` table with role column (user/admin)
+- `products` table with category and stock
+- `orders` table with shipping information
+- `order_items` table
+- 12 sample products
+
+### Creating an Admin User
+
+1. Register a normal user through the website
+2. Run this SQL command to make them an admin:
+   ```sql
+   UPDATE users SET role = 'admin' WHERE email = 'your-email@example.com';
+   ```
+
+## Environment Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `PORT` | Server port | `3000` |
+| `DB_HOST` | MySQL host | `localhost` |
+| `DB_USER` | MySQL username | `root` |
+| `DB_PASSWORD` | MySQL password | (empty) |
+| `DB_NAME` | Database name | `codealpha_ecommerce` |
+| `SESSION_SECRET` | Session encryption secret | (required) |
+
+## Running the Application
+
+```bash
+# Development mode with auto-reload
+npm run dev
+
+# Production mode
+npm start
+```
+
+## User Features
+
+- Browse products with search and category filtering
+- View product details with stock information
+- Add products to cart with quantity control
+- Checkout with shipping information (Cash on Delivery)
+- View order history and track order status
+- Register, login, and logout
+
+## Admin Features
+
+- Dashboard with store statistics
+- Add, edit, and delete products
+- Update product stock, price, image, and category
+- View all customer orders
+- Update order status (Pending, Processing, Shipped, Delivered, Cancelled)
+
+## API Endpoints
 
 ### Authentication
 | Method | Endpoint | Description |
@@ -149,84 +237,57 @@ CodeAlpha_EcommerceStore/
 | POST | `/api/auth/login` | Log in a user |
 | POST | `/api/auth/logout` | Log out the current user |
 | GET | `/api/auth/me` | Get the currently logged-in user |
+| GET | `/api/auth/profile` | Get user profile with order stats |
+
+### Products
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/products` | Get all products (supports search & category) |
+| GET | `/api/products/categories` | Get all product categories |
+| GET | `/api/products/:id` | Get a single product by ID |
+| POST | `/api/products` | Create a new product (admin) |
+| PUT | `/api/products/:id` | Update a product (admin) |
+| DELETE | `/api/products/:id` | Delete a product (admin) |
 
 ### Orders
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | POST | `/api/orders` | Place a new order (requires login) |
 | GET | `/api/orders` | Get all orders for the logged-in user |
+| GET | `/api/orders/:id` | Get a single order by ID (ownership verified) |
 
-## Database Schema
+### Admin
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/admin/orders` | Get all orders (admin) |
+| GET | `/api/admin/orders/:id` | Get a single order with items (admin) |
+| PUT | `/api/admin/orders/:id/status` | Update order status (admin) |
 
-### users
-| Column | Type | Description |
-|--------|------|-------------|
-| id | INT (PK) | User ID |
-| full_name | VARCHAR(100) | User's full name |
-| email | VARCHAR(100) | User's email (unique) |
-| password | VARCHAR(255) | Hashed password |
-| created_at | TIMESTAMP | Registration date |
-
-### products
-| Column | Type | Description |
-|--------|------|-------------|
-| id | INT (PK) | Product ID |
-| name | VARCHAR(150) | Product name |
-| description | TEXT | Product description |
-| price | DECIMAL(10,2) | Product price |
-| image_url | VARCHAR(255) | Product image URL |
-| quantity | INT | Available stock |
-| created_at | TIMESTAMP | Creation date |
-
-### orders
-| Column | Type | Description |
-|--------|------|-------------|
-| id | INT (PK) | Order ID |
-| user_id | INT (FK) | References users.id |
-| total_price | DECIMAL(10,2) | Order total |
-| order_date | TIMESTAMP | Order date |
-
-### order_items
-| Column | Type | Description |
-|--------|------|-------------|
-| id | INT (PK) | Item ID |
-| order_id | INT (FK) | References orders.id |
-| product_id | INT (FK) | References products.id |
-| quantity | INT | Quantity ordered |
-| price | DECIMAL(10,2) | Price at time of order |
-
-## Security Features
+## Security
 
 - Passwords are hashed using bcrypt (never stored in plain text)
 - SQL queries use parameterized statements to prevent SQL injection
 - Database credentials are stored in `.env` (not exposed in code)
-- Order totals are calculated on the server (frontend prices are not trusted)
+- Order totals are calculated on the server (frontend prices are never trusted)
 - Sessions are used for authentication
+- Admin APIs are protected with middleware on the server
+- Users can only access their own orders (ownership verified)
 - User input is validated on both client and server sides
-- Unauthorized order access is prevented
+- MySQL transactions ensure order consistency
+- Session secret comes from environment variables
 
 ## Screenshots
 
-*Add screenshots here:*
-- Home Page
-- Products Page
-- Product Details
-- Shopping Cart
-- Login/Register Pages
+Add screenshots here:
 
-## Future Improvements
-
-- Add product categories and filtering
-- Implement product reviews and ratings
-- Add payment gateway integration (Stripe, PayPal)
-- Add order history page for users
-- Implement email notifications
-- Add admin panel for product management
-- Add pagination for products
-- Implement wishlist functionality
-- Add product search suggestions
-- Improve image handling with file uploads
+- `docs/screenshots/home.png`
+- `docs/screenshots/products.png`
+- `docs/screenshots/product-details.png`
+- `docs/screenshots/cart.png`
+- `docs/screenshots/login.png`
+- `docs/screenshots/admin.png`
+- `docs/screenshots/orders.png`
 
 ## License
 
-This project is created for educational purposes as part of the CodeAlpha Full Stack Development internship.
+This project is created for educational purposes as part of the **CodeAlpha Full Stack Development Internship**.

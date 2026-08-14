@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CodeAlpha Store | Product Details</title>
+  <title>Order Success | CodeAlpha Store</title>
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/responsive.css">
 </head>
@@ -31,10 +31,18 @@
     </div>
   </nav>
 
-  <section class="product-detail-section">
+  <section class="success-section">
     <div class="container">
-      <div id="productDetail">
-        <div class="loading">Loading...</div>
+      <div class="success-container">
+        <div class="success-icon">&#10004;</div>
+        <h1>Order Placed Successfully!</h1>
+        <p>Thank you for your purchase. Your order has been received and is being processed.</p>
+        <p class="demo-note"><strong>Demo project:</strong> Payment is Cash on Delivery. No real payment was processed.</p>
+        <p>Order ID: <strong id="orderId">-</strong></p>
+        <div class="success-actions">
+          <a href="orders.html" class="btn btn-primary">View My Orders</a>
+          <a href="products.html" class="btn btn-outline">Continue Shopping</a>
+        </div>
       </div>
     </div>
   </section>
@@ -52,7 +60,6 @@
             <li><a href="index.html">Home</a></li>
             <li><a href="products.html">Products</a></li>
             <li><a href="cart.html">Cart</a></li>
-            <li><a href="orders.html">My Orders</a></li>
           </ul>
         </div>
         <div class="footer-section">
@@ -69,8 +76,14 @@
     </div>
   </footer>
 
-  <div id="toast" class="toast"></div>
   <script src="js/script.js"></script>
-  <script src="js/product.js"></script>
+  <script>
+    // Display the order ID from the URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const orderId = urlParams.get('orderId');
+    if (orderId) {
+      document.getElementById('orderId').textContent = orderId;
+    }
+  </script>
 </body>
 </html>

@@ -14,4 +14,7 @@ router.post('/logout', authController.logout);
 // GET /api/auth/me - Get the currently logged-in user
 router.get('/me', authController.getMe);
 
+// GET /api/auth/profile - Get user profile with order stats
+router.get('/profile', authController.getProfile);
+
 module.exports = router;

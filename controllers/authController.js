@@ -75,6 +75,7 @@ async function login(req, res) {
     // Create a session for the logged-in user
     req.session.userId = user.id;
     req.session.userName = user.full_name;
+    req.session.role = user.role;
 
     res.json({
       success: true,
@@ -82,7 +83,8 @@ async function login(req, res) {
       user: {
         id: user.id,
         fullName: user.full_name,
-        email: user.email
+        email: user.email,
+        role: user.role
       }
     });
   } catch (error) {
@@ -129,9 +131,31 @@ async function getMe(req, res) {
   }
 }
 
+// GET /api/auth/profile - Get user profile with order stats
+async function getProfile(req, res) {
+  try {
+    if (!req.session.userId) {
+      return res.status(401).json({ success: false, message: 'Not authenticated' });
+    }
+
+    const profile = await userModel.getUserProfile(req.session.userId);
+    if (!profile) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const recentOrders = await userModel.getUserRecentOrders(req.session.userId, 5);
+
+    res.json({ success: true, profile, recentOrders });
+  } catch (error) {
+    console.error('Get profile error:', error);
+    res.status(500).json({ success: false, message: 'Failed to get profile' });
+  }
+}
+
 module.exports = {
   register,
   login,
   logout,
-  getMe
+  getMe,
+  getProfile
 };
