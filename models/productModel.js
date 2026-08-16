@@ -35,11 +35,11 @@ async function getProductsByIds(ids) {
   return rows;
 }
 
-// Update product quantity after an order is placed
+// Update product stock after an order is placed
 async function updateProductQuantity(id, newQuantity, connection = null) {
   const db = connection || pool;
   const [result] = await db.query(
-    'UPDATE products SET quantity = ? WHERE id = ?',
+    'UPDATE products SET stock = ? WHERE id = ?',
     [newQuantity, id]
   );
   return result.affectedRows > 0;

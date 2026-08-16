@@ -58,18 +58,23 @@ function updateCartCount() {
   }
 }
 
-function addToCart(productId, name, price, imageUrl, maxStock = 999) {
+function addToCart(productId, name, price, imageUrl, maxStock = 999, quantity = 1) {
   const cart = getCart();
   const existingItem = cart.find((item) => item.productId === productId);
 
   if (existingItem) {
-    if (existingItem.quantity >= maxStock) {
+    const newQty = existingItem.quantity + quantity;
+    if (newQty > maxStock) {
       showToast('Sorry, not enough stock available.', 'error');
       return;
     }
-    existingItem.quantity += 1;
+    existingItem.quantity = newQty;
   } else {
-    cart.push({ productId, name, price, imageUrl, quantity: 1 });
+    if (quantity > maxStock) {
+      showToast('Sorry, not enough stock available.', 'error');
+      return;
+    }
+    cart.push({ productId, name, price, imageUrl, quantity });
   }
 
   saveCart(cart);

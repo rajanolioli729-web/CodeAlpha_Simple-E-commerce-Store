@@ -19,7 +19,12 @@ async function loadProducts() {
     }
 
     allProducts = data.products;
-    displayProducts(allProducts);
+    // Apply category filter if one was passed via URL
+    if (currentCategory) {
+      applyFilters();
+    } else {
+      displayProducts(allProducts);
+    }
     loadCategories();
   } catch (error) {
     console.error('Error loading products:', error);
@@ -38,8 +43,19 @@ async function loadCategories() {
         const buttons = data.categories.map((cat) =>
           `<button class="category-btn" data-category="${cat}">${cat}</button>`
         ).join('');
-        filter.innerHTML = `<button class="category-btn active" data-category="">All</button>${buttons}`;
+        filter.innerHTML = `<button class="category-btn" data-category="">All</button>${buttons}`;
         setupCategoryListeners();
+
+        // Highlight the active category if one was passed via URL
+        if (currentCategory) {
+          document.querySelectorAll('.category-btn').forEach((b) => {
+            if (b.dataset.category === currentCategory) {
+              b.classList.add('active');
+            }
+          });
+        } else {
+          document.querySelector('.category-btn[data-category=""]').classList.add('active');
+        }
       }
     }
   } catch (error) {

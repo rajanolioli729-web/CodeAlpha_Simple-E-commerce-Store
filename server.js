@@ -1,62 +1,60 @@
 const express = require('express');
 const session = require('express-session');
 const path = require('path');
-require('dotenv').config();
 
-// Import route files
-const productRoutes = require('./routes/productRoutes');
 const authRoutes = require('./routes/authRoutes');
+const productRoutes = require('./routes/productRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 
-// Create the Express application
 const app = express();
 
-// Middleware to parse JSON request bodies
+// Middleware
 app.use(express.json());
-
-// Middleware to parse URL-encoded request bodies
 app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, 'public')));
 
-// Configure express-session for user authentication
+// Session configuration
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || 'dev_secret_change_me',
+    secret: process.env.SESSION_SECRET || 'codealpha_ecommerce_secret',
     resave: false,
     saveUninitialized: false,
     cookie: {
-      maxAge: 1000 * 60 * 60 * 24 // 24 hours
+      httpOnly: true,
+      maxAge: 24 * 60 * 60 * 1000 // 24 hours
     }
   })
 );
 
-// Serve static files from the public folder
-app.use(express.static(path.join(__dirname, 'public')));
-
-// Register API routes
-app.use('/api/products', productRoutes);
+// Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/admin', adminRoutes);
 
-// Handle 404 errors for unknown API routes
-app.use('/api', (req, res) => {
-  res.status(404).json({ success: false, message: 'API endpoint not found' });
-});
+// Serve static files
+app.use(express.static(path.join(__dirname, 'public')));
 
-// Handle 404 errors for unknown page routes
-app.use((req, res) => {
-  res.status(404).sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-// Global error handler
+// Error handling middleware
 app.use((err, req, res, next) => {
-  console.error('Server error:', err);
-  res.status(500).json({ success: false, message: 'Something went wrong' });
+  console.error(err.stack);
+  res.status(500).json({ success: false, message: 'Server error' });
 });
 
-// Start the server
-const PORT = process.env.PORT || 3000;
+// Start server
 app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`Server running on http://localhost:${PORT}`);
 });
+```
+
+This reveals the overall app structure and starts the server. Let me look at the cart.js and orders.js files to understand the frontend more.
+
+<read_file>
+<path>public/js/cart.js</path>
+<task_progress>
+  "step": 1,
+  "note": "Reading cart.js to understand cart functionality"
+</task_progress>
+</read_file>

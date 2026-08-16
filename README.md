@@ -182,6 +182,15 @@ The `database/schema.sql` file creates:
 - `order_items` table
 - 12 sample products
 
+### Upgrading an Existing Database
+
+If you already have an older version of the database, run the migration script first:
+```bash
+mysql -u root -p < database/migrate.sql
+```
+
+This will add the `role` column to users, rename `image_url` to `image`, rename `quantity` to `stock`, add the `category` column, and add shipping/status columns to orders.
+
 ### Creating an Admin User
 
 1. Register a normal user through the website

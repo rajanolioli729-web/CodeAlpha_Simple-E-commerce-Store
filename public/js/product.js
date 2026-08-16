@@ -45,7 +45,7 @@ async function loadProductDetails() {
                 <span id="qtyDisplay">1</span>
                 <button class="quantity-btn" onclick="changeQty(1)">+</button>
               </div>
-              <button class="btn btn-primary" onclick="addToCart(${product.id}, '${safeName}', ${product.price}, '${imgSrc}', ${product.stock})">
+              <button class="btn btn-primary" onclick="addToCart(${product.id}, '${safeName}', ${product.price}, '${imgSrc}', ${product.stock}, getSelectedQty())">
                 Add to Cart
               </button>
             ` : '<button class="btn btn-primary" disabled>Out of Stock</button>'}
@@ -67,6 +67,13 @@ function changeQty(delta) {
   qty += delta;
   if (qty < 1) qty = 1;
   display.textContent = qty;
+}
+
+// Get the currently selected quantity
+function getSelectedQty() {
+  const display = document.getElementById('qtyDisplay');
+  const qty = display ? parseInt(display.textContent) : 1;
+  return qty > 0 ? qty : 1;
 }
 
 // Initialize
