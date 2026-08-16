@@ -1,6 +1,7 @@
 const express = require('express');
 const session = require('express-session');
 const path = require('path');
+require('dotenv').config();
 
 const authRoutes = require('./routes/authRoutes');
 const productRoutes = require('./routes/productRoutes');
@@ -9,10 +10,11 @@ const adminRoutes = require('./routes/adminRoutes');
 
 const app = express();
 
+const PORT = process.env.PORT || 3000;
+
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, 'public')));
 
 // Session configuration
 app.use(
@@ -30,7 +32,6 @@ app.use(
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
-app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/admin', adminRoutes);
 
@@ -47,14 +48,3 @@ app.use((err, req, res, next) => {
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
-```
-
-This reveals the overall app structure and starts the server. Let me look at the cart.js and orders.js files to understand the frontend more.
-
-<read_file>
-<path>public/js/cart.js</path>
-<task_progress>
-  "step": 1,
-  "note": "Reading cart.js to understand cart functionality"
-</task_progress>
-</read_file>
