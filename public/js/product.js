@@ -2,6 +2,38 @@
 // CodeAlpha Ecommerce Store - Product Details
 // =============================================
 
+function renderProductDetail(product, container) {
+  const inStock = product.stock > 0;
+  const imgSrc = product.image || product.image_url || '';
+  const safeName = (product.name || '').replace(/'/g, "\\'");
+
+  container.innerHTML = `
+    <div class="product-detail">
+      <img src="${imgSrc}" alt="${product.name}" onerror="this.src='https://via.placeholder.com/400x400?text=No+Image'">
+      <div class="product-detail-info">
+        <h1>${product.name}</h1>
+        <p class="price">${formatCurrency(product.price)}</p>
+        <p class="category">Category: ${product.category || 'Uncategorized'}</p>
+        <p class="description">${product.description || ''}</p>
+        <p class="stock ${inStock ? 'stock-in' : 'stock-out'}">
+          ${inStock ? `In Stock (${product.stock} available)` : 'Out of Stock'}
+        </p>
+        ${inStock ? `
+          <div class="quantity-selector">
+            <label for="quantity">Quantity:</label>
+            <button class="quantity-btn" onclick="changeQty(-1)">-</button>
+            <span id="qtyDisplay">1</span>
+            <button class="quantity-btn" onclick="changeQty(1)">+</button>
+          </div>
+          <button class="btn btn-primary" onclick="addToCart(${product.id}, '${safeName}', ${product.price}, '${imgSrc}', ${product.stock}, getSelectedQty())">
+            Add to Cart
+          </button>
+        ` : '<button class="btn btn-primary" disabled>Out of Stock</button>'}
+      </div>
+    </div>
+  `;
+}
+
 // Load a single product's details
 async function loadProductDetails() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -14,44 +46,32 @@ async function loadProductDetails() {
   }
 
   try {
-    const response = await fetch(`${API_URL}/api/products/${productId}`);
-    const data = await response.json();
+    let product = null;
 
-    if (!data.success) {
-      throw new Error(data.message || 'Product not found');
+    // 1. Try the live API (backend available)
+    try {
+      const response = await fetch(`${API_URL}/api/products/${productId}`);
+      const data = await response.json();
+      if (data.success && data.product) {
+        product = data.product;
+      } else {
+        throw new Error(data.message || 'Product not found');
+      }
+    } catch (apiError) {
+      console.warn('API unavailable, using static product catalog:', apiError);
+      // 2. Fall back to the static catalog (GitHub Pages has no backend)
+      const staticProduct = (window.STATIC_PRODUCTS || []).find(
+        (p) => String(p.id) === String(productId)
+      );
+      if (staticProduct) {
+        product = staticProduct;
+      } else {
+        throw new Error('Product not found');
+      }
     }
 
-    const product = data.product;
-    const inStock = product.stock > 0;
-    const imgSrc = product.image || product.image_url || '';
-    const safeName = (product.name || '').replace(/'/g, "\\'");
-
-    if (container) {
-      container.innerHTML = `
-        <div class="product-detail">
-          <img src="${imgSrc}" alt="${product.name}" onerror="this.src='https://via.placeholder.com/400x400?text=No+Image'">
-          <div class="product-detail-info">
-            <h1>${product.name}</h1>
-            <p class="price">${formatCurrency(product.price)}</p>
-            <p class="category">Category: ${product.category || 'Uncategorized'}</p>
-            <p class="description">${product.description || ''}</p>
-            <p class="stock ${inStock ? 'stock-in' : 'stock-out'}">
-              ${inStock ? `In Stock (${product.stock} available)` : 'Out of Stock'}
-            </p>
-            ${inStock ? `
-              <div class="quantity-selector">
-                <label for="quantity">Quantity:</label>
-                <button class="quantity-btn" onclick="changeQty(-1)">-</button>
-                <span id="qtyDisplay">1</span>
-                <button class="quantity-btn" onclick="changeQty(1)">+</button>
-              </div>
-              <button class="btn btn-primary" onclick="addToCart(${product.id}, '${safeName}', ${product.price}, '${imgSrc}', ${product.stock}, getSelectedQty())">
-                Add to Cart
-              </button>
-            ` : '<button class="btn btn-primary" disabled>Out of Stock</button>'}
-          </div>
-        </div>
-      `;
+    if (container && product) {
+      renderProductDetail(product, container);
     }
   } catch (error) {
     console.error('Error loading product details:', error);

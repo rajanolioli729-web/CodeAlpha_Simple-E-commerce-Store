@@ -200,12 +200,25 @@ async function loadFeaturedProducts() {
   if (!container) return;
 
   try {
-    const response = await fetch(`${API_URL}/api/products`);
-    const data = await response.json();
-    if (data.success) {
-      const featured = data.products.slice(0, 4);
-      displayProducts(featured, 'featuredProducts');
+    let products = null;
+
+    // 1. Try the live API (backend available)
+    try {
+      const response = await fetch(`${API_URL}/api/products`);
+      const data = await response.json();
+      if (data.success) {
+        products = data.products;
+      } else {
+        throw new Error(data.message || 'Failed to load products');
+      }
+    } catch (apiError) {
+      console.warn('API unavailable, using static product catalog:', apiError);
+      // 2. Fall back to the static catalog (GitHub Pages has no backend)
+      products = window.STATIC_PRODUCTS || [];
     }
+
+    const featured = products.slice(0, 4);
+    displayProducts(featured, 'featuredProducts');
   } catch (error) {
     console.error('Error loading featured products:', error);
     container.innerHTML = '<p class="no-results">Failed to load products.</p>';
@@ -217,19 +230,39 @@ async function loadCategories() {
   if (!container) return;
 
   try {
-    const response = await fetch(`${API_URL}/api/products/categories`);
-    const data = await response.json();
-    if (data.success) {
-      container.innerHTML = `
-        <div class="categories-grid">
-          ${data.categories.map((cat) => `
-            <div class="category-card" onclick="window.location.href='products.html?category=${encodeURIComponent(cat)}'">
-              <h3>${cat}</h3>
-            </div>
-          `).join('')}
-        </div>
-      `;
+    let categories = null;
+
+    // 1. Try the live API (backend available)
+    try {
+      const response = await fetch(`${API_URL}/api/products/categories`);
+      const data = await response.json();
+      if (data.success) {
+        categories = data.categories;
+      } else {
+        throw new Error(data.message || 'Failed to load categories');
+      }
+    } catch (apiError) {
+      console.warn('API categories unavailable, deriving from static catalog:', apiError);
+      // 2. Fall back to the static catalog (GitHub Pages has no backend)
+      const seen = new Set();
+      categories = [];
+      (window.STATIC_PRODUCTS || []).forEach((p) => {
+        if (p.category && !seen.has(p.category)) {
+          seen.add(p.category);
+          categories.push(p.category);
+        }
+      });
     }
+
+    container.innerHTML = `
+      <div class="categories-grid">
+        ${categories.map((cat) => `
+          <div class="category-card" onclick="window.location.href='products.html?category=${encodeURIComponent(cat)}'">
+            <h3>${cat}</h3>
+          </div>
+        `).join('')}
+      </div>
+    `;
   } catch (error) {
     console.error('Error loading categories:', error);
     container.innerHTML = '<p class="no-results">Failed to load categories.</p>';

@@ -5,20 +5,29 @@
 let allProducts = [];
 let currentCategory = '';
 
+// Try the API first; fall back to the static catalog (GitHub Pages has no backend)
+async function fetchProductsFromApi() {
+  const response = await fetch(`${API_URL}/api/products`);
+  const data = await response.json();
+  if (!data.success) throw new Error(data.message || 'Failed to load products');
+  return data.products;
+}
+
 // Load all products from the API
 async function loadProducts() {
   const grid = document.getElementById('productsGrid');
   if (grid) grid.innerHTML = '<div class="loading">Loading...</div>';
 
   try {
-    const response = await fetch(`${API_URL}/api/products`);
-    const data = await response.json();
-
-    if (!data.success) {
-      throw new Error(data.message || 'Failed to load products');
+    let products;
+    try {
+      products = await fetchProductsFromApi();
+    } catch (apiError) {
+      console.warn('API unavailable, using static product catalog:', apiError);
+      products = window.STATIC_PRODUCTS || [];
     }
 
-    allProducts = data.products;
+    allProducts = products;
     // Apply category filter if one was passed via URL
     if (currentCategory) {
       applyFilters();
@@ -35,27 +44,44 @@ async function loadProducts() {
 // Load categories for filtering
 async function loadCategories() {
   try {
-    const response = await fetch(`${API_URL}/api/products/categories`);
-    const data = await response.json();
-    if (data.success) {
-      const filter = document.getElementById('categoryFilter');
-      if (filter) {
-        const buttons = data.categories.map((cat) =>
-          `<button class="category-btn" data-category="${cat}">${cat}</button>`
-        ).join('');
-        filter.innerHTML = `<button class="category-btn" data-category="">All</button>${buttons}`;
-        setupCategoryListeners();
-
-        // Highlight the active category if one was passed via URL
-        if (currentCategory) {
-          document.querySelectorAll('.category-btn').forEach((b) => {
-            if (b.dataset.category === currentCategory) {
-              b.classList.add('active');
-            }
-          });
-        } else {
-          document.querySelector('.category-btn[data-category=""]').classList.add('active');
+    let categories;
+    try {
+      const response = await fetch(`${API_URL}/api/products/categories`);
+      const data = await response.json();
+      if (data.success) {
+        categories = data.categories;
+      } else {
+        throw new Error(data.message || 'Failed to load categories');
+      }
+    } catch (apiError) {
+      console.warn('API categories unavailable, deriving from static catalog:', apiError);
+      const seen = new Set();
+      categories = [];
+      (window.STATIC_PRODUCTS || []).forEach((p) => {
+        if (p.category && !seen.has(p.category)) {
+          seen.add(p.category);
+          categories.push(p.category);
         }
+      });
+    }
+
+    const filter = document.getElementById('categoryFilter');
+    if (filter) {
+      const buttons = categories.map((cat) =>
+        `<button class="category-btn" data-category="${cat}">${cat}</button>`
+      ).join('');
+      filter.innerHTML = `<button class="category-btn" data-category="">All</button>${buttons}`;
+      setupCategoryListeners();
+
+      if (currentCategory) {
+        document.querySelectorAll('.category-btn').forEach((b) => {
+          if (b.dataset.category === currentCategory) {
+            b.classList.add('active');
+          }
+        });
+      } else {
+        const first = document.querySelector('.category-btn[data-category=""]');
+        if (first) first.classList.add('active');
       }
     }
   } catch (error) {
