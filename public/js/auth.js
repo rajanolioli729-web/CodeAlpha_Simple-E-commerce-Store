@@ -5,12 +5,10 @@
 // Register a new user
 async function registerUser(fullName, email, password, confirmPassword) {
   try {
-    const response = await fetch(`${API_URL}/api/auth/register`, {
+    return await apiFetch('/api/auth/register', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ fullName, email, password, confirmPassword })
     });
-    return await response.json();
   } catch (error) {
     console.error('Registration error:', error);
     return { success: false, message: 'Registration failed. Please try again.' };
@@ -20,13 +18,10 @@ async function registerUser(fullName, email, password, confirmPassword) {
 // Log in a user
 async function loginUser(email, password) {
   try {
-    const response = await fetch(`${API_URL}/api/auth/login`, {
+    return await apiFetch('/api/auth/login', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-      credentials: 'same-origin'
+      body: JSON.stringify({ email, password })
     });
-    return await response.json();
   } catch (error) {
     console.error('Login error:', error);
     return { success: false, message: 'Login failed. Please try again.' };
@@ -40,6 +35,9 @@ function setupRegisterForm() {
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
+
+    const submitBtn = form.querySelector('button[type="submit"]');
+    if (submitBtn && submitBtn.disabled) return; // prevent double submission
 
     const fullName = document.getElementById('fullName').value.trim();
     const email = document.getElementById('email').value.trim();
@@ -56,6 +54,12 @@ function setupRegisterForm() {
       return;
     }
 
+    // Disable the button to prevent duplicate submissions
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Registering...';
+    }
+
     const result = await registerUser(fullName, email, password, confirmPassword);
 
     if (result.success) {
@@ -64,6 +68,10 @@ function setupRegisterForm() {
       setTimeout(() => { window.location.href = 'login.html'; }, 1500);
     } else {
       showMessage(result.message, 'error');
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Register';
+      }
     }
   });
 }
@@ -76,12 +84,21 @@ function setupLoginForm() {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
+    const submitBtn = form.querySelector('button[type="submit"]');
+    if (submitBtn && submitBtn.disabled) return; // prevent double submission
+
     const email = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value;
 
     if (!email || !password) {
       showMessage('Please fill in all fields', 'error');
       return;
+    }
+
+    // Disable the button during the request
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Logging in...';
     }
 
     const result = await loginUser(email, password);
@@ -92,6 +109,10 @@ function setupLoginForm() {
       setTimeout(() => { window.location.href = 'index.html'; }, 1000);
     } else {
       showMessage(result.message, 'error');
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Login';
+      }
     }
   });
 }

@@ -73,6 +73,7 @@ CodeAlpha_Simple-E-commerce-Store/
 │   │   └── responsive.css
 │   │
 │   └── js/
+│       ├── api.js
 │       ├── script.js
 │       ├── auth.js
 │       ├── products.js
@@ -271,6 +272,32 @@ npm start
 | GET | `/api/admin/orders` | Get all orders (admin) |
 | GET | `/api/admin/orders/:id` | Get a single order with items (admin) |
 | PUT | `/api/admin/orders/:id/status` | Update order status (admin) |
+
+## GitHub Pages Deployment
+
+**Important:** GitHub Pages is **static hosting only** — it cannot run Node.js, Express, or MySQL.
+
+The project is split into two deployment parts:
+
+### 1. Frontend (GitHub Pages)
+The `public/` directory is deployed to GitHub Pages via the `.github/workflows/static.yml` workflow. The static site works with a **static product catalog fallback** (`public/js/product-data.js`) so browsing products works without a backend.
+
+### 2. Backend (Separate hosting)
+The Node.js/Express backend must be deployed to a service that supports Node.js (e.g., Render, Railway, Heroku, Fly.io). The MySQL database must be hosted on a remotely accessible MySQL service (e.g., Railway MySQL, PlanetScale, Aiven, or a VPS).
+
+### Configuring the API URL
+
+Edit `public/js/api.js` and set `API_BASE_URL` to your deployed backend URL:
+
+```js
+// For local development (backend running on your machine):
+const API_BASE_URL = '';
+
+// For production (deployed backend):
+const API_BASE_URL = 'https://your-backend.onrender.com';
+```
+
+The frontend automatically falls back to the static product catalog when the API is unreachable.
 
 ## Security
 

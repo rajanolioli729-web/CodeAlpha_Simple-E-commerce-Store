@@ -1,8 +1,16 @@
 // =============================================
 // CodeAlpha Ecommerce Store - Main JavaScript
 // =============================================
+// API_URL is defined in js/api.js — include that script first in HTML.
 
-const API_URL = '';
+// Local fallback image (data URI) used when a product image fails to load.
+// This avoids external CDN requests (per project constraint: no external images).
+const FALLBACK_IMAGE = 'data:image/svg+xml,' + encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300">' +
+  '<rect width="400" height="300" fill="#e5e7eb"/>' +
+  '<text x="200" y="150" font-family="Arial" font-size="20" fill="#6b7280" text-anchor="middle">No Image</text>' +
+  '</svg>'
+);
 
 // ---------- Toast Notification System ----------
 function showToast(message, type = 'success') {
@@ -69,12 +77,13 @@ function addToCart(productId, name, price, imageUrl, maxStock = 999, quantity = 
       return;
     }
     existingItem.quantity = newQty;
+    existingItem.maxStock = maxStock;
   } else {
     if (quantity > maxStock) {
       showToast('Sorry, not enough stock available.', 'error');
       return;
     }
-    cart.push({ productId, name, price, imageUrl, quantity });
+    cart.push({ productId, name, price, imageUrl, quantity, maxStock });
   }
 
   saveCart(cart);
@@ -96,7 +105,14 @@ function updateCart(productId, newQuantity) {
       removeFromCart(productId);
       return;
     }
-    item.quantity = newQuantity;
+    // Respect stock limits if we know them
+    const maxStock = item.maxStock || item.stock;
+    if (maxStock && newQuantity > maxStock) {
+      item.quantity = maxStock;
+      showToast(`Only ${maxStock} available in stock.`, 'error');
+    } else {
+      item.quantity = newQuantity;
+    }
     saveCart(cart);
     renderCart();
   }
@@ -120,8 +136,7 @@ function setupMobileNav() {
 
 async function checkAuthState() {
   try {
-    const response = await fetch(`${API_URL}/api/auth/me`, { credentials: 'same-origin' });
-    const data = await response.json();
+    const data = await apiFetch('/api/auth/me');
 
     const authLinks = document.getElementById('authLinks');
     const userMenu = document.getElementById('userMenu');
@@ -146,11 +161,7 @@ function setupLogout() {
     logoutBtn.addEventListener('click', async (e) => {
       e.preventDefault();
       try {
-        const response = await fetch(`${API_URL}/api/auth/logout`, {
-          method: 'POST',
-          credentials: 'same-origin'
-        });
-        const data = await response.json();
+        const data = await apiFetch('/api/auth/logout', { method: 'POST' });
         if (data.success) {
           showToast('Logged out successfully.');
           setTimeout(() => { window.location.href = 'index.html'; }, 500);
@@ -178,7 +189,7 @@ function displayProducts(products, containerId = 'productsGrid') {
     const safeName = (product.name || '').replace(/'/g, "\\'");
     return `
       <div class="product-card">
-        <img src="${imgSrc}" alt="${product.name}" onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
+        <img src="${imgSrc}" alt="${product.name}" onerror="this.src=FALLBACK_IMAGE">
         <div class="product-card-body">
           <h3>${product.name}</h3>
           <p class="product-description">${product.description || ''}</p>
@@ -204,8 +215,7 @@ async function loadFeaturedProducts() {
 
     // 1. Try the live API (backend available)
     try {
-      const response = await fetch(`${API_URL}/api/products`);
-      const data = await response.json();
+      const data = await apiFetch('/api/products');
       if (data.success) {
         products = data.products;
       } else {
@@ -234,8 +244,7 @@ async function loadCategories() {
 
     // 1. Try the live API (backend available)
     try {
-      const response = await fetch(`${API_URL}/api/products/categories`);
-      const data = await response.json();
+      const data = await apiFetch('/api/products/categories');
       if (data.success) {
         categories = data.categories;
       } else {

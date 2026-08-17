@@ -9,8 +9,7 @@ async function renderCheckout() {
 
   // Check if user is logged in
   try {
-    const response = await fetch(`${API_URL}/api/auth/me`, { credentials: 'same-origin' });
-    const data = await response.json();
+    const data = await apiFetch('/api/auth/me');
 
     if (!data.success) {
       container.innerHTML = `
@@ -136,14 +135,10 @@ function setupCheckoutForm() {
     submitBtn.textContent = 'Placing order...';
 
     try {
-      const response = await fetch(`${API_URL}/api/orders`, {
+      const data = await apiFetch('/api/orders', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ items, shipping }),
-        credentials: 'same-origin'
+        body: JSON.stringify({ items, shipping })
       });
-
-      const data = await response.json();
 
       if (data.success) {
         // Clear the cart after successful order

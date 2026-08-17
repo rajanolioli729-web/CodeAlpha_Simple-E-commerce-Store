@@ -26,7 +26,7 @@ function renderCart() {
     <div class="cart-container">
       ${cart.map((item) => `
         <div class="cart-item">
-          <img src="${item.imageUrl || ''}" alt="${item.name}" onerror="this.src='https://via.placeholder.com/100x100?text=No+Image'">
+          <img src="${item.imageUrl || ''}" alt="${item.name}" onerror="this.src=FALLBACK_IMAGE">
           <div class="cart-item-info">
             <h3>${item.name}</h3>
             <p class="price">${formatCurrency(item.price)}</p>
@@ -68,8 +68,7 @@ async function goToCheckout() {
   }
 
   try {
-    const response = await fetch(`${API_URL}/api/auth/me`, { credentials: 'same-origin' });
-    const data = await response.json();
+    const data = await apiFetch('/api/auth/me');
 
     if (!data.success) {
       showToast('Please log in to checkout.', 'error');

@@ -10,8 +10,7 @@ async function loadOrders() {
   container.innerHTML = '<div class="loading">Loading...</div>';
 
   try {
-    const response = await fetch(`${API_URL}/api/orders`, { credentials: 'same-origin' });
-    const data = await response.json();
+    const data = await apiFetch('/api/orders');
 
     if (!data.success) {
       if (data.message === 'Please log in to view your orders') {
@@ -53,7 +52,7 @@ async function loadOrders() {
         <div class="order-items">
           ${order.items.map((item) => `
             <div class="order-item">
-              <img src="${item.image || ''}" alt="${item.name}" onerror="this.src='https://via.placeholder.com/50x50?text=No+Image'">
+              <img src="${item.image || ''}" alt="${item.name}" onerror="this.src=FALLBACK_IMAGE">
               <span>${item.name} x ${item.quantity}</span>
               <span>${formatCurrency(item.price * item.quantity)}</span>
             </div>
@@ -74,8 +73,7 @@ async function loadOrders() {
 // View a single order
 async function viewOrder(orderId) {
   try {
-    const response = await fetch(`${API_URL}/api/orders/${orderId}`, { credentials: 'same-origin' });
-    const data = await response.json();
+    const data = await apiFetch(`/api/orders/${orderId}`);
 
     if (!data.success) {
       showToast(data.message || 'Failed to load order', 'error');
@@ -104,7 +102,7 @@ async function viewOrder(orderId) {
         <div class="order-items">
           ${order.items.map((item) => `
             <div class="order-item">
-              <img src="${item.image || ''}" alt="${item.name}" onerror="this.src='https://via.placeholder.com/50x50?text=No+Image'">
+              <img src="${item.image || ''}" alt="${item.name}" onerror="this.src=FALLBACK_IMAGE">
               <span>${item.name} x ${item.quantity}</span>
               <span>${formatCurrency(item.price * item.quantity)}</span>
             </div>

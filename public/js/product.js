@@ -6,10 +6,12 @@ function renderProductDetail(product, container) {
   const inStock = product.stock > 0;
   const imgSrc = product.image || product.image_url || '';
   const safeName = (product.name || '').replace(/'/g, "\\'");
+  // Expose the stock so changeQty() can cap the quantity selector
+  window.currentProductStock = product.stock;
 
   container.innerHTML = `
     <div class="product-detail">
-      <img src="${imgSrc}" alt="${product.name}" onerror="this.src='https://via.placeholder.com/400x400?text=No+Image'">
+      <img src="${imgSrc}" alt="${product.name}" onerror="this.src=FALLBACK_IMAGE">
       <div class="product-detail-info">
         <h1>${product.name}</h1>
         <p class="price">${formatCurrency(product.price)}</p>
@@ -50,8 +52,7 @@ async function loadProductDetails() {
 
     // 1. Try the live API (backend available)
     try {
-      const response = await fetch(`${API_URL}/api/products/${productId}`);
-      const data = await response.json();
+      const data = await apiFetch(`/api/products/${productId}`);
       if (data.success && data.product) {
         product = data.product;
       } else {
@@ -79,13 +80,18 @@ async function loadProductDetails() {
   }
 }
 
-// Change quantity selector
+// Change quantity selector (capped at available stock)
 function changeQty(delta) {
   const display = document.getElementById('qtyDisplay');
   if (!display) return;
+  const maxQty = window.currentProductStock || 999;
   let qty = parseInt(display.textContent) || 1;
   qty += delta;
   if (qty < 1) qty = 1;
+  if (qty > maxQty) {
+    qty = maxQty;
+    showToast(`Only ${maxQty} available in stock.`, 'error');
+  }
   display.textContent = qty;
 }
 

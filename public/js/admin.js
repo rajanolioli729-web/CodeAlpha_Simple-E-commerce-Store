@@ -5,8 +5,7 @@
 // Check if user is admin
 async function checkAdmin() {
   try {
-    const response = await fetch(`${API_URL}/api/auth/me`, { credentials: 'same-origin' });
-    const data = await response.json();
+    const data = await apiFetch('/api/auth/me');
     if (!data.success || data.user.role !== 'admin') {
       showToast('Access denied. Admin only.', 'error');
       setTimeout(() => { window.location.href = '../index.html'; }, 1000);
@@ -25,13 +24,10 @@ async function loadDashboard() {
   if (!container) return;
 
   try {
-    const [ordersRes, productsRes] = await Promise.all([
-      fetch(`${API_URL}/api/admin/orders`, { credentials: 'same-origin' }),
-      fetch(`${API_URL}/api/products`)
+    const [ordersData, productsData] = await Promise.all([
+      apiFetch('/api/admin/orders'),
+      apiFetch('/api/products')
     ]);
-
-    const ordersData = await ordersRes.json();
-    const productsData = await productsRes.json();
 
     const orders = ordersData.success ? ordersData.orders : [];
     const products = productsData.success ? productsData.products : [];
@@ -77,8 +73,7 @@ async function loadAdminProducts() {
   container.innerHTML = '<div class="loading">Loading...</div>';
 
   try {
-    const response = await fetch(`${API_URL}/api/products`);
-    const data = await response.json();
+    const data = await apiFetch('/api/products');
 
     if (!data.success) {
       container.innerHTML = '<p class="no-results">Failed to load products.</p>';
@@ -184,14 +179,11 @@ async function createProduct() {
   };
 
   try {
-    const response = await fetch(`${API_URL}/api/products`, {
+    const data = await apiFetch('/api/products', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(product),
-      credentials: 'same-origin'
+      body: JSON.stringify(product)
     });
 
-    const data = await response.json();
     if (data.success) {
       showToast('Product created successfully.');
       hideProductForm();
@@ -208,8 +200,7 @@ async function createProduct() {
 // Edit a product
 async function editProduct(id) {
   try {
-    const response = await fetch(`${API_URL}/api/products/${id}`);
-    const data = await response.json();
+    const data = await apiFetch(`/api/products/${id}`);
     if (!data.success) {
       showToast('Product not found', 'error');
       return;
@@ -276,14 +267,11 @@ async function updateProduct(id) {
   };
 
   try {
-    const response = await fetch(`${API_URL}/api/products/${id}`, {
+    const data = await apiFetch(`/api/products/${id}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(product),
-      credentials: 'same-origin'
+      body: JSON.stringify(product)
     });
 
-    const data = await response.json();
     if (data.success) {
       showToast('Product updated successfully.');
       hideProductForm();
@@ -302,12 +290,10 @@ async function deleteProduct(id) {
   if (!confirm('Are you sure you want to delete this product?')) return;
 
   try {
-    const response = await fetch(`${API_URL}/api/products/${id}`, {
-      method: 'DELETE',
-      credentials: 'same-origin'
+    const data = await apiFetch(`/api/products/${id}`, {
+      method: 'DELETE'
     });
 
-    const data = await response.json();
     if (data.success) {
       showToast('Product deleted successfully.');
       loadAdminProducts();
@@ -328,8 +314,7 @@ async function loadAdminOrders() {
   container.innerHTML = '<div class="loading">Loading...</div>';
 
   try {
-    const response = await fetch(`${API_URL}/api/admin/orders`, { credentials: 'same-origin' });
-    const data = await response.json();
+    const data = await apiFetch('/api/admin/orders');
 
     if (!data.success) {
       container.innerHTML = '<p class="no-results">Failed to load orders.</p>';
@@ -377,14 +362,11 @@ async function loadAdminOrders() {
 // Update order status
 async function updateOrderStatus(orderId, status) {
   try {
-    const response = await fetch(`${API_URL}/api/admin/orders/${orderId}/status`, {
+    const data = await apiFetch(`/api/admin/orders/${orderId}/status`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status }),
-      credentials: 'same-origin'
+      body: JSON.stringify({ status })
     });
 
-    const data = await response.json();
     if (data.success) {
       showToast('Order status updated.');
     } else {
@@ -399,8 +381,7 @@ async function updateOrderStatus(orderId, status) {
 // View admin order details
 async function viewAdminOrder(orderId) {
   try {
-    const response = await fetch(`${API_URL}/api/admin/orders/${orderId}`, { credentials: 'same-origin' });
-    const data = await response.json();
+    const data = await apiFetch(`/api/admin/orders/${orderId}`);
 
     if (!data.success) {
       showToast('Failed to load order', 'error');
@@ -429,7 +410,7 @@ async function viewAdminOrder(orderId) {
         <div class="order-items">
           ${order.items.map((item) => `
             <div class="order-item">
-              <img src="${item.image || ''}" alt="${item.name}" onerror="this.src='https://via.placeholder.com/50x50?text=No+Image'">
+              <img src="${item.image || ''}" alt="${item.name}" onerror="this.src=FALLBACK_IMAGE">
               <span>${item.name} x ${item.quantity}</span>
               <span>${formatCurrency(item.price * item.quantity)}</span>
             </div>
