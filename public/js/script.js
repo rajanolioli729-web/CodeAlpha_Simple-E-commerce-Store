@@ -17,10 +17,25 @@
         const text = await response.text();
         let data;
         try { data = JSON.parse(text); }
-        catch (e) { data = { success: false, message: 'Invalid response' }; }
+        catch (e) {
+          // Non-JSON response — usually an HTML 404 page from static hosting (GitHub Pages)
+          data = {
+            success: false,
+            message:
+              'The backend server is not reachable from this page. ' +
+              'If you are viewing this on GitHub Pages, you must deploy the Node.js/Express ' +
+              'backend separately and set API_BASE_URL in public/js/api.js. ' +
+              'For local development, open http://localhost:3000/register.html instead.'
+          };
+        }
         return { ok: response.ok, status: response.status, ...data };
       } catch (err) {
-        return { ok: false, status: 0, success: false, message: 'Network error' };
+        return {
+          ok: false,
+          status: 0,
+          success: false,
+          message: 'Network error - unable to reach the server. If you are viewing this on GitHub Pages, the backend must be deployed separately.'
+        };
       }
     };
   }

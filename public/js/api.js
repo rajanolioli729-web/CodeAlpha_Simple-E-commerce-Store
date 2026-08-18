@@ -25,6 +25,19 @@
     return `${API_BASE_URL}${path}`;
   }
 
+  // Detect if a response body looks like HTML (e.g., a 404 page from GitHub Pages or a web server)
+  function looksLikeHtml(text) {
+    if (!text) return false;
+    const trimmed = text.trim();
+    return (
+      trimmed.startsWith('<!DOCTYPE') ||
+      trimmed.startsWith('<html') ||
+      trimmed.startsWith('<head') ||
+      trimmed.startsWith('<body') ||
+      /<[a-z][a-z0-9]*[\s>]/i.test(trimmed) // any tag-like content
+    );
+  }
+
   // Reusable fetch helper that handles JSON parsing and network errors
   async function apiFetch(path, options = {}) {
     const defaults = {
@@ -39,7 +52,22 @@
       try {
         data = JSON.parse(text);
       } catch (e) {
-        data = { success: false, message: 'Invalid response from server' };
+        // The response wasn't JSON. This typically means:
+        //   - The page is being served from GitHub Pages/static hosting
+        //     and no backend is deployed (API route returns an HTML 404).
+        //   - The Express server isn't running at the expected URL.
+        if (looksLikeHtml(text)) {
+          data = {
+            success: false,
+            message:
+              'The backend server is not reachable from this page. ' +
+              'If you are viewing this on GitHub Pages, you must deploy the Node.js/Express ' +
+              'backend separately and set API_BASE_URL in public/js/api.js. ' +
+              'For local development, open http://localhost:3000/register.html instead.'
+          };
+        } else {
+          data = { success: false, message: 'Invalid response from server' };
+        }
       }
       return { ok: response.ok, status: response.status, ...data };
     } catch (err) {

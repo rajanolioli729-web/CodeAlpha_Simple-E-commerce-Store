@@ -167,6 +167,34 @@ img {
   color: var(--primary-color);
 }
 
+/* Keep button text readable — ensure button styles override link hover/active color */
+.nav-links a.btn {
+  color: var(--bg-white) !important;
+}
+
+.nav-links a.btn.btn-outline,
+.nav-links a.btn.btn-light {
+  color: var(--primary-color) !important;
+}
+
+.nav-links a.btn.btn-outline:hover,
+.nav-links a.btn.btn-outline.active {
+  background-color: var(--primary-color);
+  color: var(--bg-white) !important;
+}
+
+.nav-links a.btn-primary:hover,
+.nav-links a.btn-primary.active {
+  background-color: var(--primary-dark);
+  color: var(--bg-white) !important;
+}
+
+.nav-links a.btn-light:hover,
+.nav-links a.btn-light.active {
+  background-color: var(--bg-light);
+  color: var(--primary-color) !important;
+}
+
 .cart-badge {
   background-color: var(--primary-color);
   color: var(--bg-white);
