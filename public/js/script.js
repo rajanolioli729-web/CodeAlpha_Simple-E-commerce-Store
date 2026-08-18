@@ -1,7 +1,30 @@
 // =============================================
 // CodeAlpha Ecommerce Store - Main JavaScript
 // =============================================
-// API_URL is defined in js/api.js — include that script first in HTML.
+
+// ----- Defensive API fallback -----
+// api.js is supposed to define window.API_URL and window.apiFetch.
+// If it hasn't loaded (old browser cache, CDN hiccup, etc.), provide
+// inline defaults so the rest of the code never throws ReferenceError.
+(function () {
+  if (typeof window.apiFetch !== 'function') {
+    window.API_BASE_URL = '';
+    window.API_URL = '';
+    window.apiUrl = function (path) { return window.API_BASE_URL + path; };
+    window.apiFetch = async function (path, options) {
+      try {
+        const response = await fetch(window.apiUrl(path), { credentials: 'include', ...options });
+        const text = await response.text();
+        let data;
+        try { data = JSON.parse(text); }
+        catch (e) { data = { success: false, message: 'Invalid response' }; }
+        return { ok: response.ok, status: response.status, ...data };
+      } catch (err) {
+        return { ok: false, status: 0, success: false, message: 'Network error' };
+      }
+    };
+  }
+})();
 
 // Local fallback image (data URI) used when a product image fails to load.
 // This avoids external CDN requests (per project constraint: no external images).
@@ -177,6 +200,11 @@ function setupLogout() {
 function displayProducts(products, containerId = 'productsGrid') {
   const container = document.getElementById(containerId);
   if (!container) return;
+
+  // Ensure the container has the grid class for proper product-card layout
+  if (!container.classList.contains('products-grid')) {
+    container.classList.add('products-grid');
+  }
 
   if (!products || products.length === 0) {
     container.innerHTML = '<p class="no-results">No products found.</p>';

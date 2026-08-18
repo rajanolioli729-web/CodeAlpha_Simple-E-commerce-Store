@@ -16,35 +16,46 @@
 // You must deploy the backend separately (Render, Railway, Heroku, etc.)
 // and set API_BASE_URL to that deployed URL.
 
-const API_BASE_URL = '';
+// Attach everything to window so it survives cache/superseded script ordering.
+(function (global) {
+  const API_BASE_URL = '';
 
-// Helper to build the full API endpoint URL
-function apiUrl(path) {
-  return `${API_BASE_URL}${path}`;
-}
-
-// Reusable fetch helper that handles JSON parsing and network errors
-async function apiFetch(path, options = {}) {
-  const defaults = {
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include'
-  };
-  try {
-    const response = await fetch(apiUrl(path), { ...defaults, ...options });
-    // Try to parse JSON safely
-    let data;
-    const text = await response.text();
-    try {
-      data = JSON.parse(text);
-    } catch (e) {
-      data = { success: false, message: 'Invalid response from server' };
-    }
-    return { ok: response.ok, status: response.status, ...data };
-  } catch (err) {
-    console.error(`API request failed: ${path}`, err);
-    return { ok: false, status: 0, success: false, message: 'Network error - unable to reach the server. If you are viewing this on GitHub Pages, the backend must be deployed separately.' };
+  // Helper to build the full API endpoint URL
+  function apiUrl(path) {
+    return `${API_BASE_URL}${path}`;
   }
-}
 
-// Legacy alias — all existing code uses API_URL
-const API_URL = API_BASE_URL;
+  // Reusable fetch helper that handles JSON parsing and network errors
+  async function apiFetch(path, options = {}) {
+    const defaults = {
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include'
+    };
+    try {
+      const response = await fetch(apiUrl(path), { ...defaults, ...options });
+      // Try to parse JSON safely (GitHub Pages 404 returns HTML, not JSON)
+      let data;
+      const text = await response.text();
+      try {
+        data = JSON.parse(text);
+      } catch (e) {
+        data = { success: false, message: 'Invalid response from server' };
+      }
+      return { ok: response.ok, status: response.status, ...data };
+    } catch (err) {
+      console.error(`API request failed: ${path}`, err);
+      return {
+        ok: false,
+        status: 0,
+        success: false,
+        message: 'Network error - unable to reach the server. If you are viewing this on GitHub Pages, the backend must be deployed separately.'
+      };
+    }
+  }
+
+  // Expose on the global scope (and legacy globals used by the rest of the code)
+  global.API_BASE_URL = API_BASE_URL;
+  global.API_URL = API_BASE_URL;
+  global.apiUrl = apiUrl;
+  global.apiFetch = apiFetch;
+})(window);

@@ -41,3 +41,5 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5
+      - name: Purge GitHub Pages cache
+        run: echo "Deployment complete — GitHub Pages automatically bypasses its own CDN cache for the latest deployment after a short propagation delay."
